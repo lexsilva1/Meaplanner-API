@@ -1,5 +1,4 @@
-
-
+version: '3.8'
 services:
   app:
     build:
@@ -10,9 +9,10 @@ services:
       - "8000:8000"
     volumes:
       - ./app:/app
+      - "C:/Projects/Meaplanner-API:/app/host_files"
       - dev-static-data:/vol/web
     command: >
-      sh -c "python manage.py wait_for_db && 
+      sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
              python manage.py runserver 0.0.0.0:8000"
     environment:
@@ -20,8 +20,10 @@ services:
       - DB_NAME=devdb
       - DB_USER=devuser
       - DB_PASS=changeme
+      - OLLAMA_HOST=ollama:11434
     depends_on:
       - db
+      - ollama
 
   db:
     image: postgres:13-alpine
@@ -32,7 +34,16 @@ services:
       POSTGRES_USER: devuser
       POSTGRES_PASSWORD: changeme
 
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+      - "C:/Projects/Meaplanner-API:/app/host_files"
+    restart: unless-stopped
 
 volumes:
   dev-db-data:
   dev-static-data:
+  ollama-data:
